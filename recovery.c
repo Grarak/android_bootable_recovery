@@ -841,6 +841,10 @@ prompt_and_wait() {
                 case ITEM_ADVANCED:
                     ret = show_advanced_menu();
                     break;
+
+                case ITEM_ROMSWITCHER:
+                    ret = show_romswitcher_menu();
+                    break;
             }
             if (ret == REFRESH) {
                 ret = 0;
