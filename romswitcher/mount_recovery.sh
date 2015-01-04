@@ -3,7 +3,7 @@
 BB="busybox"
 MOUNT="busybox mount"
 UMOUNT="busybox umount -l"
-ROMPATH=`echo $1 | sed 's|sdcard/0|.firstdata/media/0|g'`
+ROMPATH=`echo $1 | sed 's|/sdcard/.romswitcher|/.firstdata/media/.romswitcher|g'`
 
 while read par path emmc; do
 	case $path in

@@ -1850,8 +1850,7 @@ int show_romswitcher_menu() {
     for (;;) {
         chosen_item = get_menu_selection(headers, mount_items, 0, 0);
         if (chosen_item == 0) {
-            sprintf(buf, "%s/0", primary_path);
-            show_romswitcher_roms(strdup(buf));
+            show_romswitcher_roms(primary_path);
         } else if (chosen_item > 0 && chosen_item < num_extra_volumes + 1) {
             show_romswitcher_roms(extra_paths[chosen_item - 1]);
         } else if (chosen_item == num_extra_volumes + 1) {
@@ -1897,11 +1896,10 @@ static void romswitcher_add_rom() {
     for (;;) {
         chosen_item = get_menu_selection(headers, mount_items, 0, 0);
         if (chosen_item == 0) {
-            sprintf(buf, "%s/0", primary_path);
-            char* sdcard = strdup(buf);
+            char* sdcard = primary_path;
             if (lstat(sdcard, &st)) mkdir(sdcard, 0777);
 
-            sprintf(buf, "%s/romswitcher", sdcard);
+            sprintf(buf, "%s/.romswitcher", sdcard);
             char* rs_path = strdup(buf);
             if (lstat(rs_path, &st)) mkdir(rs_path, 0777);
             int count = 0;
@@ -1911,7 +1909,8 @@ static void romswitcher_add_rom() {
                 if (lstat(rom_path, &st)) {
                     sprintf(buf, "Yes - rom%d will be the name of the new rom", count);
                     if (confirm_selection("Add new rom?", strdup(buf))) {
-                        mkdir(rom_path, 0777);
+                        sprintf(buf, "add_rom.sh %s", rom_path);
+                        __system(strdup(buf));
                         ui_print("Created new rom in %s\n", rom_path);
                         break;
                     } else break;
@@ -1921,7 +1920,7 @@ static void romswitcher_add_rom() {
             }
             break;
         } else if (chosen_item > 0 && chosen_item < num_extra_volumes + 1) {
-            sprintf(buf, "%s/romswitcher", extra_paths[chosen_item - 1]);
+            sprintf(buf, "%s/.romswitcher", extra_paths[chosen_item - 1]);
             char* rs_path = strdup(buf);
             if (lstat(rs_path, &st)) mkdir(rs_path, 0777);
             int count = 0;
@@ -1931,7 +1930,8 @@ static void romswitcher_add_rom() {
                 if (lstat(rom_path, &st)) {
                     sprintf(buf, "Yes - rom%d will be the name of the new rom", count);
                     if (confirm_selection("Add new rom?", strdup(buf))) {
-                        mkdir(rom_path, 0777);
+                        sprintf(buf, "add_rom.sh %s", rom_path);
+                        __system(strdup(buf));
                         ui_print("Created new rom in %s\n", rom_path);
                         break;
                     } else break;
@@ -1955,7 +1955,7 @@ static void show_romswitcher_roms(const char *mount_point) {
 
     char buf[100];
 
-    sprintf(buf, "%s/romswitcher", mount_point);
+    sprintf(buf, "%s/.romswitcher", mount_point);
     mount_point = strdup(buf);
 
     static const char* headers[] = { "Installed ROMs", "", NULL };
@@ -1980,7 +1980,7 @@ static void show_romswitcher_install_menu(const char *mount_point, const char *r
     char** extra_paths = get_extra_storage_paths();
     int num_extra_volumes = get_num_extra_volumes();
 
-    sprintf(buf, "%s/0/romswitcher", primary_path);
+    sprintf(buf, "%s/.romswitcher", primary_path);
     char* is_primary = strstr(rom_path, strdup(buf)) != NULL;
 
     int count = is_primary ? 4 : 7;
@@ -2067,7 +2067,7 @@ static void show_romswitcher_choose_zip(const char *mount_point, const char *rom
     struct stat st;
     char* primary_path = get_primary_storage_path();
 
-    sprintf(buf, "%s/0/romswitcher", primary_path);
+    sprintf(buf, "%s/.romswitcher", primary_path);
     if (strstr(rom_path, strdup(buf)) != NULL) {
 
         sprintf(buf, "%ssystem", rom_path);

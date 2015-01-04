@@ -6,7 +6,7 @@ UMOUNT="busybox umount -l"
 
 ROMPATH=$1
 
-[ -d /.firstdata ] && ROMPATH=`echo $ROMPATH | sed 's|sdcard/0|.firstdata/media/0|g'`
+[ -d /.firstdata ] && ROMPATH=`echo $ROMPATH | sed 's|/sdcard/.romswitcher|/.firstdata/media/.romswitcher|g'`
 
 if [ -d ${ROMPATH}system ]; then
 
