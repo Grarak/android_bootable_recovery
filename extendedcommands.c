@@ -1896,10 +1896,7 @@ static void romswitcher_add_rom() {
     for (;;) {
         chosen_item = get_menu_selection(headers, mount_items, 0, 0);
         if (chosen_item == 0) {
-            char* sdcard = primary_path;
-            if (lstat(sdcard, &st)) mkdir(sdcard, 0777);
-
-            sprintf(buf, "%s/.romswitcher", sdcard);
+            sprintf(buf, "%s/.romswitcher", primary_path);
             char* rs_path = strdup(buf);
             if (lstat(rs_path, &st)) mkdir(rs_path, 0777);
             int count = 0;
@@ -2067,6 +2064,11 @@ static void show_romswitcher_choose_zip(const char *mount_point, const char *rom
     struct stat st;
     char* primary_path = get_primary_storage_path();
 
+    if (ensure_path_mounted(primary_path) != 0) {
+        LOGE("Can't mount %s\n", primary_path);
+        return;
+    }
+
     sprintf(buf, "%s/.romswitcher", primary_path);
     if (strstr(rom_path, strdup(buf)) != NULL) {
 
@@ -2116,7 +2118,7 @@ static void show_romswitcher_choose_zip(const char *mount_point, const char *rom
         ui_set_background(BACKGROUND_ICON_INSTALLING);
         ui_show_indeterminate_progress();
 
-        sprintf(buf, "mod_zip.sh %s %s %s", rom_path, mount_point, file);
+        sprintf(buf, "mod_zip.sh %s %s", rom_path, file);
         if (__system(strdup(buf)) == 0) {
             ui_set_background(BACKGROUND_ICON_CLOCKWORK);
             install_zip(file);

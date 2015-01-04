@@ -1,8 +1,8 @@
 #!/sbin/sh
 
 ROMPATH=$1
-MOUNTPOINT=$2
-FILE=$3
+FILE=$2
+MOUNTPOINT="/data/media"
 
 updater_script_file="META-INF/com/google/android/updater-script"
 update_binary_file="META-INF/com/google/android/update-binary"

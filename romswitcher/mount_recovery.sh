@@ -42,14 +42,14 @@ if [ -d ${ROMPATH}system ]; then
 
 else
 
-	$MOUNT -t ext4 -o rw ${ROMPATH}data.img /data
+	$MOUNT -t ext4 ${ROMPATH}data.img /data
 	$BB mkdir -p /data/media
 
 	$MOUNT --bind /.firstdata/media /data/media
 
-	$MOUNT -t ext4 -o rw ${ROMPATH}cache.img /cache
+	$MOUNT -t ext4 ${ROMPATH}cache.img /cache
 
-	$MOUNT -t ext4 -o rw ${ROMPATH}system.img /system
+	$MOUNT -t ext4 ${ROMPATH}system.img /system
 
 fi
 
