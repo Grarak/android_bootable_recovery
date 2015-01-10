@@ -4,8 +4,8 @@ BB="busybox"
 MOUNT="busybox mount"
 UMOUNT="busybox umount -l"
 
-MOUNTPOINT=$1
-FILE=$2
+MOUNTPOINT="/data/media"
+FILE=$1
 
 updater_script_file="META-INF/com/google/android/updater-script"
 update_binary_file="META-INF/com/google/android/update-binary"

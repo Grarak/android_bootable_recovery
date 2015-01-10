@@ -845,6 +845,10 @@ prompt_and_wait() {
                 case ITEM_ROMSWITCHER:
                     ret = show_romswitcher_menu();
                     break;
+
+                case ITEM_SELECT_ROM:
+                    ret = show_select_rom_menu();
+                    break;
             }
             if (ret == REFRESH) {
                 ret = 0;

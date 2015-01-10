@@ -173,7 +173,8 @@ LOCAL_ADDITIONAL_DEPENDENCIES := \
     zip_binary \
     data_format.sh \
     cache_format.sh \
-    add_rom.sh
+    add_rom.sh \
+    select_rom.sh
 
 LOCAL_ADDITIONAL_DEPENDENCIES += \
     minivold \

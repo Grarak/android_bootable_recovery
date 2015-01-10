@@ -114,6 +114,7 @@ extern void device_truedualboot_after_load_volume_table();
 #define ITEM_PARTITION       5
 #define ITEM_ADVANCED        6
 #define ITEM_ROMSWITCHER     7
+#define ITEM_SELECT_ROM      8
 
 // Header text to display above the main menu.
 extern char* MENU_HEADERS[];

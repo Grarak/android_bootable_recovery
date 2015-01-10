@@ -104,9 +104,11 @@ typedef struct {
 static void romswitcher_add_rom();
 static void show_choose_zip_menu(const char *mount_point);
 static void show_romswitcher_roms(const char *mount_point);
+static void create_new_rom(const char *mount_point);
 static void show_romswitcher_install_menu(const char *mount_point, const char *rom_path);
 static void show_romswitcher_choose_zip(const char *mount_point, const char *rom_path);
 static int show_romswitcher_create_image(const char *mount_point, const char *rom_path, char *image);
+static void select_rom(char* mount_point);
 static void format_sdcard(const char* volume);
 static int can_partition(const char* volume);
 static int is_path_mounted(const char* path);
@@ -1871,7 +1873,6 @@ out:
 
 static void romswitcher_add_rom() {
     char buf[100];
-    struct stat st;
     int i = 0, chosen_item = 0;
     static char* mount_items[MAX_NUM_MANAGED_VOLUMES + 1];
 
@@ -1896,49 +1897,44 @@ static void romswitcher_add_rom() {
     for (;;) {
         chosen_item = get_menu_selection(headers, mount_items, 0, 0);
         if (chosen_item == 0) {
-            sprintf(buf, "%s/.romswitcher", primary_path);
-            char* rs_path = strdup(buf);
-            if (lstat(rs_path, &st)) mkdir(rs_path, 0777);
-            int count = 0;
-            for (;;) {
-                sprintf(buf, "%s/rom%d", rs_path, count);
-                char* rom_path = strdup(buf);
-                if (lstat(rom_path, &st)) {
-                    sprintf(buf, "Yes - rom%d will be the name of the new rom", count);
-                    if (confirm_selection("Add new rom?", strdup(buf))) {
-                        sprintf(buf, "add_rom.sh %s", rom_path);
-                        __system(strdup(buf));
-                        ui_print("Created new rom in %s\n", rom_path);
-                        break;
-                    } else break;
-                } else {
-                    count++;
-                }
-            }
+            create_new_rom(primary_path);
             break;
         } else if (chosen_item > 0 && chosen_item < num_extra_volumes + 1) {
-            sprintf(buf, "%s/.romswitcher", extra_paths[chosen_item - 1]);
-            char* rs_path = strdup(buf);
-            if (lstat(rs_path, &st)) mkdir(rs_path, 0777);
-            int count = 0;
-            for (;;) {
-                sprintf(buf, "%s/rom%d", rs_path, count);
-                char* rom_path = strdup(buf);
-                if (lstat(rom_path, &st)) {
-                    sprintf(buf, "Yes - rom%d will be the name of the new rom", count);
-                    if (confirm_selection("Add new rom?", strdup(buf))) {
-                        sprintf(buf, "add_rom.sh %s", rom_path);
-                        __system(strdup(buf));
-                        ui_print("Created new rom in %s\n", rom_path);
-                        break;
-                    } else break;
-                } else {
-                    count++;
-                }
-            }
+            create_new_rom(extra_paths[chosen_item - 1]);
             break;
         } else {
             break;
+        }
+    }
+}
+
+static void create_new_rom(const char *mount_point) {
+
+    if (ensure_path_mounted(mount_point) != 0) {
+        LOGE("Can't mount %s\n", mount_point);
+        return;
+    }
+
+    char buf[100];
+    struct stat st;
+
+    sprintf(buf, "%s/.romswitcher", mount_point);
+    char* rs_path = strdup(buf);
+    if (lstat(rs_path, &st)) mkdir(rs_path, 0777);
+    int count = 0;
+    for (;;) {
+        sprintf(buf, "%s/rom%d", rs_path, count);
+        char* rom_path = strdup(buf);
+        if (lstat(rom_path, &st)) {
+            sprintf(buf, "Yes - rom%d will be the name of the new rom", count);
+            if (confirm_selection("Add new rom?", strdup(buf))) {
+                sprintf(buf, "add_rom.sh %s", rom_path);
+                 __system(strdup(buf));
+                ui_print("Created new rom in %s\n", rom_path);
+                break;
+            } else break;
+        } else {
+            count++;
         }
     }
 }
@@ -1978,7 +1974,7 @@ static void show_romswitcher_install_menu(const char *mount_point, const char *r
     int num_extra_volumes = get_num_extra_volumes();
 
     sprintf(buf, "%s/.romswitcher", primary_path);
-    char* is_primary = strstr(rom_path, strdup(buf)) != NULL;
+    int is_primary = strstr(rom_path, strdup(buf)) != NULL;
 
     int count = is_primary ? 4 : 7;
     char* install_items[MAX_NUM_MANAGED_VOLUMES + count];
@@ -2128,7 +2124,7 @@ static void show_romswitcher_choose_zip(const char *mount_point, const char *rom
         }
 
         ui_print("Mouting partitions back...\n");
-        sprintf(buf, "zip_mod.sh %s %s", mount_point, file);
+        sprintf(buf, "zip_mod.sh %s", file);
         __system(strdup(buf));
         __system("mount_back.sh");
         __system("cat /tmp/recovery.log > /sdcard/rs.log");
@@ -2205,4 +2201,81 @@ static int show_romswitcher_create_image(const char *mount_point, const char *ro
 
     }
 
+}
+
+int show_select_rom_menu() {
+    char buf[100];
+    int i = 0, chosen_item = 0;
+    static char* mount_items[MAX_NUM_MANAGED_VOLUMES + 2];
+
+    char* primary_path = get_primary_storage_path();
+    char** extra_paths = get_extra_storage_paths();
+    int num_extra_volumes = get_num_extra_volumes();
+
+    if (ensure_path_mounted(primary_path) != 0) {
+        LOGE("Can't mount %s\n", primary_path);
+        return 1;
+    }
+
+    memset(mount_items, 0, MAX_NUM_MANAGED_VOLUMES + 2);
+
+    static const char* headers[] = { "Select a ROM", "", NULL };
+
+    sprintf(buf, "choose ROM from %s", primary_path);
+    mount_items[0] = strdup(buf);
+
+    for (i = 0; i < num_extra_volumes; i++) {
+        sprintf(buf, "choose ROM from %s", extra_paths[i]);
+        mount_items[i + 1] = strdup(buf);
+    }
+
+    mount_items[num_extra_volumes + 1] = "reboot to default ROM";
+    mount_items[num_extra_volumes + 2] = NULL;
+
+    for (;;) {
+        chosen_item = get_menu_selection(headers, mount_items, 0, 0);
+        if (chosen_item == 0) {
+            select_rom(primary_path);
+        } else if (chosen_item > 0 && chosen_item < num_extra_volumes + 1) {
+            select_rom(extra_paths[chosen_item - 1]);
+        } else if (chosen_item == num_extra_volumes + 1) {
+            __system("echo default > /data/media/.rom");
+            ui_print("Rebooting...\n");
+            reboot_main_system(ANDROID_RB_RESTART, 0, 0);
+        } else {
+            goto out;
+        }
+    }
+
+out:
+    free(mount_items[0]);
+    if (extra_paths != NULL) {
+        for (i = 0; i < num_extra_volumes; i++)
+            free(mount_items[i + 1]);
+    }
+    return chosen_item;
+}
+
+static void select_rom(char* mount_point) {
+    if (ensure_path_mounted(mount_point) != 0) {
+        LOGE("Can't mount %s\n", mount_point);
+        return;
+    }
+
+    char buf[100];
+
+    sprintf(buf, "%s/.romswitcher", mount_point);
+    char* rs_path = strdup(buf);
+
+    static const char* headers[] = { "Choose a ROM", "", NULL };
+
+    romswitcher = 1;
+    char* file = choose_file_menu(rs_path, NULL, headers);
+    romswitcher = 0;
+    if (file == NULL) return;
+
+    sprintf(buf, "select_rom.sh %s", file);
+    __system(strdup(buf));
+    ui_print("Rebooting...\n");
+    reboot_main_system(ANDROID_RB_RESTART, 0, 0);
 }
