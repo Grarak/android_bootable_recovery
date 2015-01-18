@@ -17,9 +17,8 @@ cp -f $updater_script_file ${updater_script_file}_backup
 
 sed 's|mount("ext4"|run_program("/sbin/mount_recovery.sh", "'${ROMPATH}'");#|g' -i $updater_script_file
 sed 's|format("ext4"|run_program("/sbin/system_format.sh", "'${ROMPATH}'");#|g' -i $updater_script_file
-sed 's|run_program("/sbin/busybox", "mount", "/system");|run_program("/sbin/mount_recovery.sh", "'${ROMPATH}'");|g' -i $updater_script_file
-sed 's|run_program("/sbin/busybox", "mount", "/data");|run_program("/sbin/mount_recovery.sh", "'${ROMPATH}'");|g' -i $updater_script_file
-sed 's|run_program("/sbin/busybox", "mount", "/cache");|run_program("/sbin/mount_recovery.sh", "'${ROMPATH}'");|g' -i $updater_script_file
+sed 's|run_program("/sbin/busybox", "mount"|run_program("/sbin/mount_recovery.sh", "'${ROMPATH}'");#|g' -i $updater_script_file
+sed 's|run_program("/sbin/mount"|run_program("/sbin/mount_recovery.sh", "'${ROMPATH}'");#|g' -i $updater_script_file
 sed s/.*\"boot.img\".*\)\;/#/ -i $updater_script_file
 sed 's|run_program("/tmp/otasigcheck.sh")|#|g' -i $updater_script_file
 sed -i s/.*getprop.*/#/ $updater_script_file
