@@ -2110,21 +2110,20 @@ static void show_romswitcher_choose_zip(const char *mount_point, const char *rom
     sprintf(confirm, "Yes - Install %s", basename(file));
 
     if (confirm_selection("Confirm install?", confirm)) {
-        ui_print("\n-- Loading scripts...\n");
+        ui_print("\n-- Copying %s to /tmp/rs_update.zip\n", file);
         ui_set_background(BACKGROUND_ICON_INSTALLING);
         ui_show_indeterminate_progress();
 
         sprintf(buf, "mod_zip.sh %s %s", rom_path, file);
         if (__system(strdup(buf)) == 0) {
             ui_set_background(BACKGROUND_ICON_CLOCKWORK);
-            install_zip(file);
+            install_zip("/tmp/rs_update.zip");
         } else {
             ui_set_background(BACKGROUND_ICON_ERROR);
             ui_print("Something went wrong!\nPlease send me /sdcard/rs.log");
         }
 
         ui_print("Mouting partitions back...\n");
-        sprintf(buf, "zip_mod.sh %s", file);
         __system(strdup(buf));
         __system("mount_back.sh");
         __system("cat /tmp/recovery.log > /sdcard/rs.log");

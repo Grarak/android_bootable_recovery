@@ -169,7 +169,6 @@ LOCAL_ADDITIONAL_DEPENDENCIES := \
     mount_recovery.sh \
     system_format.sh \
     mount_back.sh \
-    zip_mod.sh \
     zip_binary \
     data_format.sh \
     cache_format.sh \
